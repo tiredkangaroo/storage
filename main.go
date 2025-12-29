@@ -92,8 +92,19 @@ func main() {
 		w.WriteHeader(http.StatusNoContent) // respond with no content status
 	})
 
-	if err := http.ListenAndServe(dv(os.Getenv("ADDR"), "6789"), nil); err != nil {
-		slog.Error("server", "error", err)
+	cert_path := os.Getenv("TLS_CERT_PATH")
+	key_path := os.Getenv("TLS_KEY_PATH")
+
+	if cert_path != "" && key_path != "" {
+		slog.Info("server", "msg", "starting HTTPS server", "addr", dv(os.Getenv("ADDR"), "6789"))
+		if err := http.ListenAndServeTLS(dv(os.Getenv("ADDR"), "6789"), cert_path, key_path, nil); err != nil {
+			slog.Error("server", "error", err)
+		}
+	} else {
+		slog.Info("server", "msg", "starting HTTP server", "addr", dv(os.Getenv("ADDR"), "6789"))
+		if err := http.ListenAndServe(dv(os.Getenv("ADDR"), "6789"), nil); err != nil {
+			slog.Error("server", "error", err)
+		}
 	}
 }
 
