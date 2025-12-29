@@ -40,7 +40,7 @@ func (s *FileStorage) Save(key string, value io.Reader) error {
 }
 
 func (s *FileStorage) Load(key string) (io.ReadCloser, error) {
-	p := filepath.Join(s.basePath, key)
+	p := filepath.Join(s.basePath, filepath.Clean(key))
 	f, err := os.Open(p)
 	if err != nil {
 		if os.IsNotExist(err) {
