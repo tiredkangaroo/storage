@@ -33,6 +33,8 @@ func main() {
 	// pull is left intentionally unsecured for public access
 	http.HandleFunc("GET /pull/{key}", CreatePullHandler(store))
 
+	http.HandleFunc("POST /api/v4/upload", CreateHCCDNPushHandler(store))                 // hc cdn endpoint
+	http.HandleFunc("POST /api/v4/upload_from_url", CreateHCCDNPushFromURLHandler(store)) // another hc cdn endpoint
 	http.HandleFunc("DELETE /delete/{key}", CreateDeleteHandler(store))
 
 	if CERT_PATH != "" && KEY_PATH != "" {

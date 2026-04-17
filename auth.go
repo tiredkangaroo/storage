@@ -18,6 +18,18 @@ func checkAuth(r *http.Request) error {
 	if API_SECRET == "" {
 		return nil // no auth required
 	}
+	// check Authorization header for hc cdn endpoints
+	fmt.Println("checking auth for path", r.URL.Path, "with ENABLE_HC_CDN_ENDPOINTS =", ENABLE_HC_CDN_ENDPOINTS)
+	if ENABLE_HC_CDN_ENDPOINTS && (r.URL.Path == "/api/v4/upload" || r.URL.Path == "/api/v4/upload_from_url") {
+		auth := r.Header.Get("Authorization")
+		if auth == "" {
+			return fmt.Errorf("missing Authorization header")
+		}
+		if auth != "Bearer "+API_SECRET {
+			return fmt.Errorf("invalid Authorization header")
+		}
+		return nil
+	}
 	timestamp := r.Header.Get("X-Timestamp")
 	signature := r.Header.Get("X-Signature")
 	uploadID := r.Header.Get("X-Upload-ID")
