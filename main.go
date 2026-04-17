@@ -9,7 +9,7 @@ import (
 	"github.com/tiredkangaroo/storage/storage"
 )
 
-const FILE_SIZE_LIMIT = 5 << 20 // 50 MB
+const FILE_SIZE_LIMIT = 100 << 20 // 100 MB
 
 func main() {
 	if API_SECRET != "" {
