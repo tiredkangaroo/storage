@@ -12,7 +12,12 @@ import (
 const FILE_SIZE_LIMIT = 100 << 20 // 100 MB
 
 func main() {
-	if API_SECRET != "" {
+	if err := initConfig(); err != nil {
+		slog.Error("init config", "error", err)
+		return
+	}
+
+	if DefaultConfig.APISecret != "" {
 		slog.Info("auth", "msg", "API secret set, authentication enabled")
 		startCleanupRoutine() // start the cleanup routine for upload IDs
 	} else {
@@ -22,7 +27,7 @@ func main() {
 	var store storage.Storage
 	var err error
 
-	store, err = storage.NewFileStorage(STORAGE_PATH)
+	store, err = storage.NewFileStorage(DefaultConfig.Storage.Path)
 	if err != nil {
 		slog.Error("init storage", "error", err)
 		return
@@ -37,14 +42,14 @@ func main() {
 	http.HandleFunc("POST /api/v4/upload_from_url", CreateHCCDNPushFromURLHandler(store)) // another hc cdn endpoint
 	http.HandleFunc("DELETE /delete/{key}", CreateDeleteHandler(store))
 
-	if CERT_PATH != "" && KEY_PATH != "" {
-		slog.Info("server", "msg", "starting HTTPS server", "addr", ADDR)
-		if err := http.ListenAndServeTLS(ADDR, CERT_PATH, KEY_PATH, nil); err != nil {
+	if DefaultConfig.CertPath != "" && DefaultConfig.KeyPath != "" {
+		slog.Info("server", "msg", "starting HTTPS server", "addr", DefaultConfig.Addr)
+		if err := http.ListenAndServeTLS(DefaultConfig.Addr, DefaultConfig.CertPath, DefaultConfig.KeyPath, nil); err != nil {
 			slog.Error("server", "error", err)
 		}
 	} else {
-		slog.Info("server", "msg", "starting HTTP server", "addr", ADDR)
-		if err := http.ListenAndServe(ADDR, nil); err != nil {
+		slog.Info("server", "msg", "starting HTTP server", "addr", DefaultConfig.Addr)
+		if err := http.ListenAndServe(DefaultConfig.Addr, nil); err != nil {
 			slog.Error("server", "error", err)
 		}
 	}
@@ -56,21 +61,3 @@ func random() string {
 	rand.Read(r[:])
 	return fmt.Sprintf("%x", r[:])
 }
-
-// example code to auth
-// API_SECRET is the shared secret between client and server
-// func signRequest(req *http.Request) {
-// 	uploadID := uuid.New().String()
-// 	timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
-
-// 	// canoncical string: uploadID + \n + timestamp
-// 	cs := uploadID + "\n" + timestamp
-// 	csh := hmac.New(sha256.New, []byte(API_SECRET))
-// 	csh.Write([]byte(cs))
-// 	csb := csh.Sum(nil)
-// 	csb_hex := fmt.Sprintf("%x", csb)
-
-// 	req.Header.Set("X-Upload-ID", uploadID)
-// 	req.Header.Set("X-Timestamp", timestamp)
-// 	req.Header.Set("X-Signature", csb_hex)
-// }

@@ -109,7 +109,7 @@ func CreateHCCDNPushHandler(store storage.Storage) http.HandlerFunc {
 			"filename":     header.Filename,
 			"size":         header.Size,
 			"content_type": header.Header.Get("Content-Type"),
-			"url":          PUBLIC_URL + "/pull/" + key,
+			"url":          DefaultConfig.PublicURL + "/pull/" + key,
 			"created_at":   time.Now().Format(time.RFC3339),
 		}) // that's the hc cdn response format
 	}
@@ -172,7 +172,7 @@ func CreateHCCDNPushFromURLHandler(store storage.Storage) http.HandlerFunc {
 			"filename":     filepath.Base(body.URL), // idk if that works but let's see :hmm:
 			"size":         resp.ContentLength,
 			"content_type": mimeType,
-			"url":          PUBLIC_URL + "/pull/" + key,
+			"url":          DefaultConfig.PublicURL + "/pull/" + key,
 			"created_at":   time.Now().Format(time.RFC3339),
 		})
 	}

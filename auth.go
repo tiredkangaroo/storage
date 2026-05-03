@@ -15,17 +15,16 @@ var recently_used_upload_ids = make(map[string]time.Time)
 var ruui_mx sync.Mutex
 
 func checkAuth(r *http.Request) error {
-	if API_SECRET == "" {
+	if DefaultConfig.APISecret == "" {
 		return nil // no auth required
 	}
 	// check Authorization header for hc cdn endpoints
-	fmt.Println("checking auth for path", r.URL.Path, "with ENABLE_HC_CDN_ENDPOINTS =", ENABLE_HC_CDN_ENDPOINTS)
-	if ENABLE_HC_CDN_ENDPOINTS && (r.URL.Path == "/api/v4/upload" || r.URL.Path == "/api/v4/upload_from_url") {
+	if DefaultConfig.EnableMockCDNEndpoints && (r.URL.Path == "/api/v4/upload" || r.URL.Path == "/api/v4/upload_from_url") {
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
 			return fmt.Errorf("missing Authorization header")
 		}
-		if auth != "Bearer "+API_SECRET {
+		if auth != "Bearer "+DefaultConfig.APISecret {
 			return fmt.Errorf("invalid Authorization header")
 		}
 		return nil
@@ -58,7 +57,7 @@ func checkAuth(r *http.Request) error {
 
 	// canoncical string: uploadID + \n + timestamp
 	cs := uploadID + "\n" + timestamp
-	csh := hmac.New(sha256.New, []byte(API_SECRET))
+	csh := hmac.New(sha256.New, []byte(DefaultConfig.APISecret))
 	csh.Write([]byte(cs))
 	csb := csh.Sum(nil)
 	csb_hex := fmt.Sprintf("%x", csb)
